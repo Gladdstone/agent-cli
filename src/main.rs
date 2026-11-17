@@ -49,11 +49,19 @@ async fn main() -> anyhow::Result<()> {
                 Role::User,
                 "Test message.".to_string(),
             );
-            let chat_request = ChatRequest::new(&"qwen2.5-coder:7b".to_string(), vec![message], 0.7, 1024);
+            let val = "qwen2.5-coder:7b".to_string();
+            let chat_request = ChatRequest::new(&val, vec![message], 0.7, 1024);
             let req = reqwest_client
                 .post(qwen_client.endpoint())
                 .header("Content-Type", "application/json")
                 .json(&chat_request);
+            let sse_request = Request {
+                request_builder: req,
+                stream: true,
+                verbose: true,
+                tools: Value::Null,
+            };
+            sse_request.execute();
             println!("{:#?}", req);
         }
         Some(Command::Config) => println!("{config:#?}"),

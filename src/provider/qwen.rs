@@ -35,8 +35,8 @@ pub struct ChatRequest<'a> {
     max_tokens: u32,
 }
 
-impl ChatRequest {
-    pub fn new(model: &String, messages: Vec<Message>, temperature: f32, max_tokens: u32) -> Self {
+impl<'a> ChatRequest<'a> {
+    pub fn new(model: &'a String, messages: Vec<Message>, temperature: f32, max_tokens: u32) -> Self {
         ChatRequest {
             model: model,
             messages:messages,
