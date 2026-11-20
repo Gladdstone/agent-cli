@@ -2,18 +2,15 @@ mod config;
 mod core;
 mod provider;
 mod tools;
+mod tui;
 
 use std::io::Write;
 use clap::{Parser, Subcommand};
-use reqwest::Client;
-use crate::core::message::{ContentBlock, Message, Role};
-// use crate::provider::qwen::{ChatRequest, QwenClient};
 use crate::core::agent::Agent;
 use crate::core::event::Event;
-use crate::provider::anthropic::AnthropicProvider;
 use crate::provider::qwen::QwenProvider;
 use crate::tools::Registry;
-// use crate::provider::sse::Request;
+use crate::tui::app;
 
 #[derive(Parser)]
 #[command(name="agent", version, about="Terminal coding-agent harness")]
@@ -36,9 +33,6 @@ enum Command {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
-    // let reqwest_client = Client::new();
-    // let qwen_client = QwenClient::new("http://localhost:11434/v1/chat/completions", "qwen2.5-coder:7b");
-
     let filter = if cli.debug { "debug" } else { "info" };
     tracing_subscriber::fmt()
         .with_env_filter(
@@ -53,19 +47,9 @@ async fn main() -> anyhow::Result<()> {
         Some(Command::Run { prompt}) => {
             tracing::debug!(?prompt, "run");
             run(config, prompt).await?;
-            // let message = Message::new(
-            //     Role::User,
-            //     "Test message.".to_string(),
-            // );
-            // let val = "qwen2.5-coder:7b".to_string();
-            // let chat_request = ChatRequest::new(&val, vec![message], 0.7, 1024);
-            // let req = reqwest_client
-            //     .post(qwen_client.endpoint())
-            //     .header("Content-Type", "application/json")
-            //     .json(&chat_request);
         }
         Some(Command::Config) => println!("{config:#?}"),
-        None => println!("TUI not implemented yet. Try `agent --help`."),
+        None => app::run(config).await?,
     }
 
     Ok(())
